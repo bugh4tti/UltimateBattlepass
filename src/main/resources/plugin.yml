@@ -4,16 +4,17 @@ main: me.bughatti.ultimatebattlepass.UltimateBattlepass
 api-version: '1.20'
 author: Bughatti
 description: Pase de batalla con misiones diarias y semanales.
+softdepend: [PlaceholderAPI]
 
 commands:
   battlepass:
     description: Comando principal de UltimateBattlepass.
     aliases: [bp, bpass]
-    usage: /<command> [help|reload|...]
+    usage: /<command> [help|top|booster|reload|...]
 
 permissions:
   ultimatebattlepass.use:
-    description: Permite abrir el menú del pase de batalla.
+    description: Permite abrir el menú del pase de batalla, el top y usar boosters.
     default: true
   ultimatebattlepass.admin:
     description: Permite usar los comandos de administración.
