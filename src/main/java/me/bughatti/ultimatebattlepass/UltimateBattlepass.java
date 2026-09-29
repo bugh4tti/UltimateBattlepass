@@ -12,6 +12,7 @@ import me.bughatti.ultimatebattlepass.utils.Colors;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -143,10 +144,7 @@ public class UltimateBattlepass extends JavaPlugin {
         if (raw == null) {
             raw = "&cMensaje faltante en messages.yml: " + path;
         }
-        for (int i = 0; i + 1 < replacements.length; i += 2) {
-            raw = raw.replace(replacements[i], replacements[i + 1]);
-        }
-        return Colors.colorize(raw);
+        return Colors.colorize(replace(raw, replacements));
     }
 
     public void send(CommandSender sender, String path, String... replacements) {
@@ -158,6 +156,42 @@ public class UltimateBattlepass extends JavaPlugin {
         for (String line : lines) {
             sender.sendMessage(Colors.colorize(line));
         }
+    }
+
+    /**
+     * Muestra un título y subtítulo configurados en messages.yml (sección "titles").
+     * Los reemplazos van de a pares, igual que en format(...).
+     */
+    public void sendTitle(Player player, String path, String... replacements) {
+        ConfigurationSection section = messagesConfig.getConfigurationSection("titles." + path);
+        if (section == null || !section.getBoolean("enabled", true)) {
+            return;
+        }
+
+        String title = Colors.colorize(replace(section.getString("title", ""), replacements));
+        String subtitle = Colors.colorize(replace(section.getString("subtitle", ""), replacements));
+        int fadeIn = section.getInt("fade-in", 10);
+        int stay = section.getInt("stay", 50);
+        int fadeOut = section.getInt("fade-out", 20);
+        int delay = Math.max(0, section.getInt("delay", 0));
+
+        if (delay <= 0) {
+            player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+            return;
+        }
+
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            if (player.isOnline()) {
+                player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+            }
+        }, delay);
+    }
+
+    private String replace(String text, String... replacements) {
+        for (int i = 0; i + 1 < replacements.length; i += 2) {
+            text = text.replace(replacements[i], replacements[i + 1]);
+        }
+        return text;
     }
 
     // ------------------------------------------------------------------
@@ -203,4 +237,4 @@ public class UltimateBattlepass extends JavaPlugin {
     public MenuManager getMenuManager() {
         return menuManager;
     }
-  }
+            }
