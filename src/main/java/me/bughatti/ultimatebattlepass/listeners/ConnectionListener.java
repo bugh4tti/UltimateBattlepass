@@ -21,6 +21,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
+        plugin.getProgressDisplayManager().remove(event.getPlayer());
         plugin.getDataManager().unload(event.getPlayer().getUniqueId());
     }
 }
