@@ -1,0 +1,294 @@
+# ==========================================
+#  UltimateBattlepass - menus.yml
+# ==========================================
+# Colores con & y hex con &#RRGGBB.
+# Para cabezas: material PLAYER_HEAD y "texture" con el valor base64 o la URL
+# de textures.minecraft.net.
+
+texts:
+  week-state:
+    ACTIVE: "&aActiva"
+    UPCOMING: "&ePróximamente"
+    ENDED: "&cTerminada"
+  pass-type:
+    free: "&aGratuito"
+    premium: "&dPremium"
+
+# ------------------------------------------
+#  Menú de Pase de Batalla
+# ------------------------------------------
+main:
+  title: "Menú de Pase de Batalla"
+  rows: 3
+  items:
+    rewards:
+      slot: 10
+      material: CHEST
+      name: "&#55FF55▸ Lista de Recompensas"
+      lore:
+        - ""
+        - "&7Conoce las recompensas"
+        - "&7de este pase de batalla."
+        - ""
+        - "&e▲ ¡Click para abrir menú!"
+    progress:
+      slot: 13
+      material: EXPERIENCE_BOTTLE
+      name: "&#FFDD55▸ Progreso del Pase"
+      lore:
+        - ""
+        - "&7Visualiza tu progreso"
+        - "&7en el pase de batalla."
+        - ""
+        - "&#FFDD55✎ Información:"
+        - " &8▪ &7Temporada: &f%season%"
+        - " &8▪ &7Semana: %week_state%"
+        - " &8▪ &7Tipo de Pase: %pass_type%"
+        - " &8▪ &7Puntos: &b%points%&8/&b%points_needed%"
+        - " &8▪ &7Nivel Actual: &d%level%&8/&d%max_level%"
+    missions:
+      slot: 16
+      material: WRITABLE_BOOK
+      name: "&#FFAA00▸ Misiones Disponibles"
+      lore:
+        - ""
+        - "&7Completa las misiones disponibles"
+        - "&7para obtener puntos del pase."
+        - ""
+        - "&e▲ ¡Click para abrir menú!"
+
+# ------------------------------------------
+#  Selector de Misiones
+# ------------------------------------------
+missions:
+  title: "Selector de Misiones"
+  rows: 4
+
+  # Slots de las Semanas #1, #2, #3 y #4 (en ese orden)
+  week-slots: [10, 12, 14, 16]
+
+  week-item:
+    material: RED_CONCRETE
+    name: "&#FF5555▸ Misiones de Semana #%week%"
+    lore-active:
+      - ""
+      - "&7Echa un vistazo a los retos"
+      - "&7disponibles de la semana."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Estado: %state%"
+      - " &8▪ &7Completadas: &f%completed%&8/&f%total%"
+      - " &8▪ &7Termina en: &f%time%"
+      - ""
+      - "&e▲ ¡Click para ver misiones!"
+    lore-upcoming:
+      - ""
+      - "&7Echa un vistazo a los retos"
+      - "&7disponibles de la semana."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Estado: %state%"
+      - " &8▪ &7Empieza en: &f%time%"
+      - ""
+      - "&c▲ Todavía no está disponible."
+    lore-ended:
+      - ""
+      - "&7Echa un vistazo a los retos"
+      - "&7de la semana."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Estado: %state%"
+      - " &8▪ &7Completadas: &f%completed%&8/&f%total%"
+      - ""
+      - "&e▲ ¡Click para ver misiones!"
+
+  # Misiones diarias (con la cuenta regresiva al reinicio)
+  daily-item:
+    slot: 35
+    material: BOOK
+    name: "&#FFDD55▸ Nuevas Misiones"
+    lore:
+      - ""
+      - "&7Las misiones se reiniciarán"
+      - "&7dentro de &e%time%&7."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Completadas: &f%completed%&8/&f%total%"
+      - ""
+      - "&e▲ ¡Click para ver misiones!"
+
+  back:
+    slot: 31
+    material: OAK_DOOR
+    name: "&c▸ Volver"
+    lore:
+      - ""
+      - "&e▲ ¡Click para volver!"
+
+# ------------------------------------------
+#  Lista de misiones (diarias o de una semana)
+# ------------------------------------------
+mission-list:
+  title-daily: "Misiones Diarias"
+  title-week: "Misiones de Semana #%week%"
+  rows: 4
+  slots: [10, 12, 14, 16, 20, 22, 24]
+
+  in-progress:
+    material: PAPER
+    name: "&#FFAA00▸ %mission_name%"
+    lore:
+      - ""
+      - "%description%"
+      - ""
+      - "&#FFDD55✎ Progreso:"
+      - " &8▪ &7Avance: &f%progress%&8/&f%amount% &8(&f%percent%%&8)"
+      - " &8▪ &7Recompensa: &b+%points% puntos"
+      - ""
+      - "%bar%"
+
+  completed:
+    material: LIME_DYE
+    name: "&#55FF55▸ %mission_name%"
+    lore:
+      - ""
+      - "%description%"
+      - ""
+      - "&#FFDD55✎ Progreso:"
+      - " &8▪ &7Avance: &f%progress%&8/&f%amount% &8(&f100%&8)"
+      - " &8▪ &7Recompensa: &b+%points% puntos"
+      - ""
+      - "&a▲ ¡Misión completada!"
+
+  back:
+    slot: 31
+    material: OAK_DOOR
+    name: "&c▸ Volver"
+    lore:
+      - ""
+      - "&e▲ ¡Click para volver!"
+
+# ------------------------------------------
+#  Recompensas del Pase
+# ------------------------------------------
+rewards:
+  title: "Recompensas del Pase"
+  rows: 6
+
+  # Fila de arriba: recompensas gratis / fila del medio: barra / fila de abajo: premium
+  free-slots: [10, 11, 12, 13, 14, 15, 16]
+  bar-slots: [19, 20, 21, 22, 23, 24, 25]
+  premium-slots: [28, 29, 30, 31, 32, 33, 34]
+
+  status:
+    available: "&e▲ ¡Click para reclamar!"
+    claimed: "&a▲ ¡Recompensa reclamada!"
+    need-premium: "&c▲ ¡Debes tener el pase premium!"
+    level-locked: "&c▲ Alcanza el nivel %level% para reclamar."
+
+  border:
+    slots: [9, 18, 27, 17, 26, 35]
+    material: LIGHT_BLUE_STAINED_GLASS_PANE
+    name: " "
+
+  bar:
+    reached:
+      material: LIME_STAINED_GLASS_PANE
+      name: "&a▸ Nivel %level% alcanzado"
+    pending:
+      material: GRAY_STAINED_GLASS_PANE
+      name: "&7▸ Nivel %level%"
+
+  free:
+    available:
+      material: LIME_DYE
+      name: "&#55FF55▸ Recompensa #%level%"
+      lore:
+        - ""
+        - "&7Reclama la recompensa"
+        - "&7de este nivel."
+        - ""
+        - "&#FFDD55☀ Recompensas:"
+        - "%rewards%"
+        - ""
+        - "%status%"
+    claimed:
+      material: GRAY_DYE
+      name: "&7▸ Recompensa #%level%"
+      lore:
+        - ""
+        - "&#FFDD55☀ Recompensas:"
+        - "%rewards%"
+        - ""
+        - "%status%"
+    locked:
+      material: RED_DYE
+      name: "&#FF5555▸ Recompensa #%level%"
+      lore:
+        - ""
+        - "&7Reclama la recompensa"
+        - "&7de este nivel."
+        - ""
+        - "&#FFDD55☀ Recompensas:"
+        - "%rewards%"
+        - ""
+        - "%status%"
+
+  premium:
+    available:
+      material: MAGENTA_STAINED_GLASS_PANE
+      name: "&#DD55FF▸ Recompensa Premium #%level%"
+      lore:
+        - ""
+        - "&7Reclama la recompensa"
+        - "&7de este nivel exclusivo."
+        - ""
+        - "&#FFDD55☀ Recompensas:"
+        - "%rewards%"
+        - ""
+        - "%status%"
+    claimed:
+      material: GRAY_STAINED_GLASS_PANE
+      name: "&7▸ Recompensa Premium #%level%"
+      lore:
+        - ""
+        - "&#FFDD55☀ Recompensas:"
+        - "%rewards%"
+        - ""
+        - "%status%"
+    locked:
+      material: PURPLE_STAINED_GLASS_PANE
+      name: "&#AA55FF▸ Recompensa Premium #%level%"
+      lore:
+        - ""
+        - "&7Reclama la recompensa"
+        - "&7de este nivel exclusivo."
+        - ""
+        - "&#FFDD55☀ Recompensas:"
+        - "%rewards%"
+        - ""
+        - "%status%"
+
+  previous:
+    slot: 48
+    material: ARROW
+    name: "&e◀ Página anterior"
+    lore:
+      - ""
+      - "&7Página &f%page%&8/&f%pages%"
+
+  next:
+    slot: 50
+    material: ARROW
+    name: "&ePágina siguiente ▶"
+    lore:
+      - ""
+      - "&7Página &f%page%&8/&f%pages%"
+
+  back:
+    slot: 49
+    material: OAK_DOOR
+    name: "&c▸ Volver"
+    lore:
+      - ""
+      - "&e▲ ¡Click para volver!"
