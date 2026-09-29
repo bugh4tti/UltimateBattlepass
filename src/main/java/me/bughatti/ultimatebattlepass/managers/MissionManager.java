@@ -23,7 +23,8 @@ public class MissionManager {
         MOB_KILL,
         PLAYER_KILL,
         PLAY_TIME,
-        COMMAND
+        COMMAND,
+        FISH
     }
 
     public static class Mission {
@@ -38,9 +39,12 @@ public class MissionManager {
         private final int amount;
         private final int points;
         private final List<String> commands;
+        private final String unit;
+        private final List<String> messages;
 
         public Mission(String key, String id, int week, String name, List<String> description,
-                       MissionType type, String target, int amount, int points, List<String> commands) {
+                       MissionType type, String target, int amount, int points, List<String> commands,
+                       String unit, List<String> messages) {
             this.key = key;
             this.id = id;
             this.week = week;
@@ -51,6 +55,8 @@ public class MissionManager {
             this.amount = amount;
             this.points = points;
             this.commands = commands;
+            this.unit = unit;
+            this.messages = messages;
         }
 
         /** Clave con la que se guarda el progreso (daily_id o week1_id). */
@@ -97,6 +103,16 @@ public class MissionManager {
 
         public List<String> getCommands() {
             return commands;
+        }
+
+        /** Unidad que se ve en el progreso (bloques, peces, mobs...). */
+        public String getUnit() {
+            return unit;
+        }
+
+        /** Mensajes propios que se envían al completar la misión. */
+        public List<String> getMessages() {
+            return messages;
         }
 
         public boolean matches(MissionType eventType, String eventTarget) {
@@ -169,19 +185,36 @@ public class MissionManager {
             int amount = Math.max(1, mission.getInt("amount", 1));
             int points = Math.max(0, mission.getInt("points", 0));
             String name = mission.getString("name", id);
+            String unit = mission.getString("unit", defaultUnit(type));
 
-            List<String> description = new ArrayList<>();
-            if (mission.isList("description")) {
-                description.addAll(mission.getStringList("description"));
-            } else if (mission.isString("description")) {
-                description.add(mission.getString("description"));
-            }
-
+            List<String> description = readList(mission, "description");
+            List<String> messages = readList(mission, "messages");
             List<String> commands = new ArrayList<>(mission.getStringList("commands"));
 
             target.add(new Mission(prefix + id, id, week, name, description,
-                    type, targetName, amount, points, commands));
+                    type, targetName, amount, points, commands, unit, messages));
         }
+    }
+
+    private List<String> readList(ConfigurationSection section, String key) {
+        List<String> result = new ArrayList<>();
+        if (section.isList(key)) {
+            result.addAll(section.getStringList(key));
+        } else if (section.isString(key)) {
+            result.add(section.getString(key));
+        }
+        return result;
+    }
+
+    private String defaultUnit(MissionType type) {
+        return switch (type) {
+            case BLOCK_BREAK, BLOCK_PLACE -> "bloques";
+            case MOB_KILL -> "mobs";
+            case PLAYER_KILL -> "jugadores";
+            case PLAY_TIME -> "minutos";
+            case COMMAND -> "usos";
+            case FISH -> "peces";
+        };
     }
 
     // ------------------------------------------------------------------
@@ -239,6 +272,11 @@ public class MissionManager {
         PlayerData data = plugin.getDataManager().get(player.getUniqueId());
         plugin.getDataManager().validate(data);
 
+        // De las misiones que avanzaron, se muestra la más cercana a completarse
+        Mission best = null;
+        double bestRatio = -1.0;
+        int bestProgress = 0;
+
         for (Mission mission : all) {
             if (!mission.matches(type, target)) {
                 continue;
@@ -252,7 +290,19 @@ public class MissionManager {
 
             if (updated >= mission.getAmount()) {
                 complete(player, data, mission);
+                continue;
             }
+
+            double ratio = updated / (double) mission.getAmount();
+            if (ratio > bestRatio) {
+                best = mission;
+                bestRatio = ratio;
+                bestProgress = updated;
+            }
+        }
+
+        if (best != null) {
+            plugin.getProgressDisplayManager().show(player, best, bestProgress);
         }
     }
 
@@ -262,15 +312,26 @@ public class MissionManager {
         String name = Colors.strip(mission.getName());
         String points = String.valueOf(mission.getPoints());
 
+        // Se borra la bossbar de esta misión
+        plugin.getProgressDisplayManager().onComplete(player, mission);
+
         plugin.send(player, "mission-completed", "%mission%", name, "%points%", points);
         plugin.sendTitle(player, "mission-completed", "%mission%", name, "%points%", points);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+
+        // Mensajes propios de la misión (opcionales)
+        for (String line : mission.getMessages()) {
+            player.sendMessage(Colors.colorize(line
+                    .replace("%player%", player.getName())
+                    .replace("%mission%", name)
+                    .replace("%points%", points)));
+        }
 
         for (String command : mission.getCommands()) {
             plugin.getPassManager().runCommand(player, command);
         }
 
-        plugin.getPassManager().addPoints(player, mission.getPoints());
+        plugin.getPassManager().addMissionPoints(player, mission.getPoints());
     }
 
     // ------------------------------------------------------------------
@@ -312,10 +373,11 @@ public class MissionManager {
 
         lastDailyKey = key;
         plugin.getDataManager().validateAll();
+        plugin.getProgressDisplayManager().removeAll();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             plugin.send(player, "daily-reset");
             plugin.sendTitle(player, "daily-reset");
         }
     }
-        }
+                        }
