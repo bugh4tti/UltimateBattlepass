@@ -2,8 +2,10 @@ package me.bughatti.ultimatebattlepass.data;
 
 import me.bughatti.ultimatebattlepass.UltimateBattlepass;
 import me.bughatti.ultimatebattlepass.managers.SeasonManager;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,10 @@ public class DataManager {
         }
     }
 
+    public File getFolder() {
+        return folder;
+    }
+
     public PlayerData get(UUID uuid) {
         PlayerData data = cache.get(uuid);
         if (data == null) {
@@ -41,6 +47,7 @@ public class DataManager {
 
         if (file.exists()) {
             YamlConfiguration yml = YamlConfiguration.loadConfiguration(file);
+            data.setName(yml.getString("name", ""));
             data.setSeasonId(yml.getString("season-id", ""));
             data.setDailyKey(yml.getString("daily-key", ""));
             data.setPoints(yml.getInt("points", 0));
@@ -54,6 +61,18 @@ public class DataManager {
                     data.getProgress().put(key, section.getInt(key));
                 }
             }
+
+            data.setBooster(
+                    yml.getString("booster.name", ""),
+                    yml.getDouble("booster.multiplier", 1.0),
+                    yml.getDouble("booster.chance", 100.0),
+                    yml.getLong("booster.expires", 0L)
+            );
+        }
+
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null) {
+            data.setName(online.getName());
         }
 
         validate(data);
@@ -92,7 +111,13 @@ public class DataManager {
             return;
         }
 
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null) {
+            data.setName(online.getName());
+        }
+
         YamlConfiguration yml = new YamlConfiguration();
+        yml.set("name", data.getName());
         yml.set("season-id", data.getSeasonId());
         yml.set("daily-key", data.getDailyKey());
         yml.set("points", data.getPoints());
@@ -102,6 +127,13 @@ public class DataManager {
 
         for (Map.Entry<String, Integer> entry : data.getProgress().entrySet()) {
             yml.set("progress." + entry.getKey(), entry.getValue());
+        }
+
+        if (data.getBoosterExpires() > 0) {
+            yml.set("booster.name", data.getBoosterName());
+            yml.set("booster.multiplier", data.getBoosterMultiplier());
+            yml.set("booster.chance", data.getBoosterChance());
+            yml.set("booster.expires", data.getBoosterExpires());
         }
 
         try {
