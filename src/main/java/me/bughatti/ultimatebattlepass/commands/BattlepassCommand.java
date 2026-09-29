@@ -1,6 +1,8 @@
 package me.bughatti.ultimatebattlepass.commands;
 
 import me.bughatti.ultimatebattlepass.UltimateBattlepass;
+import me.bughatti.ultimatebattlepass.managers.BoosterManager;
+import me.bughatti.ultimatebattlepass.managers.TopManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -40,6 +42,8 @@ public class BattlepassCommand implements CommandExecutor, TabCompleter {
         switch (args[0].toLowerCase()) {
             case "help" -> plugin.sendList(sender, "help");
             case "reload" -> reload(sender);
+            case "top" -> top(sender, args);
+            case "booster", "boosters" -> booster(sender, args);
             case "addpoints" -> points(sender, args, false);
             case "setpoints" -> points(sender, args, true);
             case "premium" -> premium(sender, args);
@@ -48,6 +52,10 @@ public class BattlepassCommand implements CommandExecutor, TabCompleter {
         }
         return true;
     }
+
+    // ------------------------------------------------------------------
+    // Administración básica
+    // ------------------------------------------------------------------
 
     private void reload(CommandSender sender) {
         if (!requireAdmin(sender)) {
@@ -143,6 +151,166 @@ public class BattlepassCommand implements CommandExecutor, TabCompleter {
         plugin.send(sender, "admin.season-started");
     }
 
+    // ------------------------------------------------------------------
+    // Top
+    // ------------------------------------------------------------------
+
+    private void top(CommandSender sender, String[] args) {
+        boolean chat = args.length > 1 && args[1].equalsIgnoreCase("chat");
+
+        if (sender instanceof Player player && !chat) {
+            if (!player.hasPermission(USE_PERMISSION)) {
+                plugin.send(sender, "no-permission");
+                return;
+            }
+            plugin.getMenuManager().openTop(player);
+            return;
+        }
+
+        sendTopChat(sender);
+    }
+
+    private void sendTopChat(CommandSender sender) {
+        sender.sendMessage(plugin.format("top.header"));
+
+        List<TopManager.Entry> entries = plugin.getTopManager().getTop();
+        if (entries.isEmpty()) {
+            sender.sendMessage(plugin.format("top.empty"));
+        }
+
+        for (TopManager.Entry entry : entries) {
+            sender.sendMessage(plugin.format("top.line",
+                    "%position%", String.valueOf(entry.getPosition()),
+                    "%player%", entry.getName(),
+                    "%level%", String.valueOf(entry.getLevel()),
+                    "%points%", String.valueOf(entry.getPoints())));
+        }
+
+        if (sender instanceof Player player) {
+            int position = plugin.getTopManager().getPosition(player.getUniqueId());
+            if (position > 0) {
+                sender.sendMessage(plugin.format("top.footer", "%position%", String.valueOf(position)));
+            } else {
+                sender.sendMessage(plugin.format("top.footer-none"));
+            }
+        }
+
+        sender.sendMessage(plugin.format("top.footer-line"));
+    }
+
+    // ------------------------------------------------------------------
+    // Boosters
+    // ------------------------------------------------------------------
+
+    private void booster(CommandSender sender, String[] args) {
+        String sub = args.length > 1 ? args[1].toLowerCase() : "info";
+
+        switch (sub) {
+            case "info" -> {
+                if (!(sender instanceof Player player)) {
+                    plugin.send(sender, "player-only");
+                    return;
+                }
+                if (!player.hasPermission(USE_PERMISSION)) {
+                    plugin.send(sender, "no-permission");
+                    return;
+                }
+                plugin.getMenuManager().openBoosters(player);
+            }
+            case "list" -> boosterList(sender);
+            case "give" -> boosterGive(sender, args);
+            case "clear" -> boosterClear(sender, args);
+            default -> plugin.send(sender, "unknown-command");
+        }
+    }
+
+    private void boosterList(CommandSender sender) {
+        if (!requireAdmin(sender)) {
+            return;
+        }
+
+        BoosterManager manager = plugin.getBoosterManager();
+        List<String> ids = manager.getIds();
+
+        sender.sendMessage(plugin.format("booster.list-header", "%count%", String.valueOf(ids.size())));
+        for (String id : ids) {
+            BoosterManager.Booster booster = manager.get(id);
+            if (booster == null) {
+                continue;
+            }
+            sender.sendMessage(plugin.format("booster.list-line",
+                    "%id%", booster.getId(),
+                    "%type%", booster.getType().name(),
+                    "%multiplier%", BoosterManager.formatNumber(booster.getMultiplier()),
+                    "%chance%", BoosterManager.formatNumber(booster.getChance())));
+        }
+    }
+
+    private void boosterGive(CommandSender sender, String[] args) {
+        if (!requireAdmin(sender)) {
+            return;
+        }
+        if (args.length < 4) {
+            plugin.send(sender, "unknown-command");
+            return;
+        }
+
+        Player target = Bukkit.getPlayerExact(args[2]);
+        if (target == null) {
+            plugin.send(sender, "player-not-found", "%player%", args[2]);
+            return;
+        }
+
+        BoosterManager.Booster booster = plugin.getBoosterManager().get(args[3]);
+        if (booster == null) {
+            plugin.send(sender, "booster.unknown", "%id%", args[3]);
+            return;
+        }
+
+        int amount = 1;
+        if (args.length > 4) {
+            Integer parsed = parseInt(args[4]);
+            if (parsed == null || parsed < 1) {
+                plugin.send(sender, "invalid-number");
+                return;
+            }
+            amount = Math.min(parsed, 2304);
+        }
+
+        plugin.getBoosterManager().give(target, booster, amount);
+
+        plugin.send(sender, "booster.given",
+                "%amount%", String.valueOf(amount),
+                "%booster%", booster.getName(),
+                "%player%", target.getName());
+        plugin.send(target, "booster.received",
+                "%amount%", String.valueOf(amount),
+                "%booster%", booster.getName());
+    }
+
+    private void boosterClear(CommandSender sender, String[] args) {
+        if (!requireAdmin(sender)) {
+            return;
+        }
+        if (args.length < 3) {
+            plugin.send(sender, "unknown-command");
+            return;
+        }
+
+        Player target = Bukkit.getPlayerExact(args[2]);
+        if (target == null) {
+            plugin.send(sender, "player-not-found", "%player%", args[2]);
+            return;
+        }
+
+        plugin.getBoosterManager().clear(target);
+        plugin.send(sender, "booster.cleared", "%player%", target.getName());
+    }
+
+    // ------------------------------------------------------------------
+    // Utilidades
+    // ------------------------------------------------------------------
+
     private boolean requireAdmin(CommandSender sender) {
         if (sender.hasPermission(ADMIN_PERMISSION)) {
             return true;
@@ -170,6 +338,8 @@ public class BattlepassCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             List<String> options = new ArrayList<>();
             options.add("help");
+            options.add("top");
+            options.add("booster");
             if (admin) {
                 options.add("reload");
                 options.add("addpoints");
@@ -180,11 +350,19 @@ public class BattlepassCommand implements CommandExecutor, TabCompleter {
             return filter(options, args[0]);
         }
 
+        String sub = args[0].toLowerCase();
+
+        if (sub.equals("top") && args.length == 2) {
+            return filter(List.of("chat"), args[1]);
+        }
+
+        if (sub.equals("booster") || sub.equals("boosters")) {
+            return boosterTab(args, admin);
+        }
+
         if (!admin) {
             return new ArrayList<>();
         }
-
-        String sub = args[0].toLowerCase();
 
         if (args.length == 2) {
             if (sub.equals("addpoints") || sub.equals("setpoints")) {
@@ -205,6 +383,37 @@ public class BattlepassCommand implements CommandExecutor, TabCompleter {
             if (sub.equals("addpoints") || sub.equals("setpoints")) {
                 return filter(List.of("50", "120", "500"), args[2]);
             }
+        }
+
+        return new ArrayList<>();
+    }
+
+    private List<String> boosterTab(String[] args, boolean admin) {
+        if (args.length == 2) {
+            List<String> options = new ArrayList<>();
+            options.add("info");
+            if (admin) {
+                options.add("list");
+                options.add("give");
+                options.add("clear");
+            }
+            return filter(options, args[1]);
+        }
+
+        if (!admin) {
+            return new ArrayList<>();
+        }
+
+        String action = args[1].toLowerCase();
+
+        if (args.length == 3 && (action.equals("give") || action.equals("clear"))) {
+            return filter(onlineNames(), args[2]);
+        }
+        if (args.length == 4 && action.equals("give")) {
+            return filter(plugin.getBoosterManager().getIds(), args[3]);
+        }
+        if (args.length == 5 && action.equals("give")) {
+            return filter(List.of("1", "5", "10"), args[4]);
         }
 
         return new ArrayList<>();
