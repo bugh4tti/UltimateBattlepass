@@ -140,7 +140,12 @@ public class PassManager {
         int after = getLevel(data);
         for (int level = before + 1; level <= after; level++) {
             plugin.send(player, "level-up", "%level%", String.valueOf(level));
+        }
+
+        if (after > before) {
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            // Un solo título con el nivel final, aunque haya subido varios a la vez
+            plugin.sendTitle(player, "level-up", "%level%", String.valueOf(after));
         }
     }
 
@@ -203,6 +208,9 @@ public class PassManager {
         }
 
         plugin.send(player, "reward-claimed", "%level%", String.valueOf(level));
+        plugin.sendTitle(player, "reward-claimed",
+                "%level%", String.valueOf(level),
+                "%type%", plugin.format(premium ? "pass-type.premium" : "pass-type.free"));
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
         return ClaimResult.SUCCESS;
     }
@@ -235,4 +243,4 @@ public class PassManager {
     private String stripSlash(String command) {
         return command.startsWith("/") ? command.substring(1) : command;
     }
-                       }
+    }
