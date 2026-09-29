@@ -2,6 +2,8 @@ package me.bughatti.ultimatebattlepass.listeners;
 
 import me.bughatti.ultimatebattlepass.UltimateBattlepass;
 import me.bughatti.ultimatebattlepass.managers.MissionManager.MissionType;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,8 +11,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 
 public class MissionListener implements Listener {
 
@@ -22,22 +26,41 @@ public class MissionListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
+        Block block = event.getBlock();
+
+        // Anti-farm: se decide antes de olvidar el bloque
+        boolean count = plugin.getAntiFarmManager().countBreak(block);
+        plugin.getAntiFarmManager().forget(block);
+        if (!count) {
+            return;
+        }
+
         plugin.getMissionManager().progress(
                 event.getPlayer(),
                 MissionType.BLOCK_BREAK,
-                event.getBlock().getType().name(),
+                block.getType().name(),
                 1
         );
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
+        boolean count = plugin.getAntiFarmManager().countPlace(event.getBlockPlaced());
+        if (!count) {
+            return;
+        }
+
         plugin.getMissionManager().progress(
                 event.getPlayer(),
                 MissionType.BLOCK_PLACE,
                 event.getBlockPlaced().getType().name(),
                 1
         );
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSpawn(CreatureSpawnEvent event) {
+        plugin.getAntiFarmManager().onSpawn(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -56,7 +79,26 @@ public class MissionListener implements Listener {
             return;
         }
 
+        // Anti-farm: mobs de spawners, huevos o cría no cuentan
+        if (plugin.getAntiFarmManager().isIgnoredMob(entity)) {
+            return;
+        }
+
         plugin.getMissionManager().progress(killer, MissionType.MOB_KILL, entity.getType().name(), 1);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFish(PlayerFishEvent event) {
+        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
+            return;
+        }
+
+        String target = null;
+        if (event.getCaught() instanceof Item item) {
+            target = item.getItemStack().getType().name();
+        }
+
+        plugin.getMissionManager().progress(event.getPlayer(), MissionType.FISH, target, 1);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -74,4 +116,4 @@ public class MissionListener implements Listener {
 
         plugin.getMissionManager().progress(event.getPlayer(), MissionType.COMMAND, label, 1);
     }
-          }
+            }
