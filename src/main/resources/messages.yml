@@ -19,6 +19,56 @@ reward-locked-level: "&cTodavía no alcanzaste el nivel &f%level%&c."
 need-premium: "&cDebés tener el pase premium para reclamar esto."
 week-locked: "&cEsa semana todavía no está disponible."
 
+# Nombre del tipo de recompensa (se usa en %type% de los títulos)
+pass-type:
+  free: "&aGratis"
+  premium: "&dPremium"
+
+# ------------------------------------------
+#  Títulos y subtítulos
+# ------------------------------------------
+# enabled:  true/false para activar o desactivar ese título
+# fade-in / stay / fade-out: duración en ticks (20 ticks = 1 segundo)
+# delay: ticks de espera antes de mostrarlo (sirve para que un título no pise a otro)
+# Colores con & y hex con &#RRGGBB
+titles:
+  mission-completed:
+    enabled: true
+    title: "&#FF0000¡Completaste una misión! 🔥"
+    subtitle: "&#FFAA00Felicidades &8- &f%mission% &b(+%points% puntos)"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+    delay: 0
+
+  reward-claimed:
+    enabled: true
+    title: "&#55FF55¡Recompensa reclamada! 🎁"
+    subtitle: "&7Nivel &e%level% &8- %type%"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+    delay: 0
+
+  level-up:
+    enabled: true
+    title: "&#FFDD55¡Subiste de nivel! ⭐"
+    subtitle: "&7Ahora sos nivel &d%level% &7del pase"
+    fade-in: 10
+    stay: 60
+    fade-out: 20
+    # Se muestra un poco después para no tapar el título de la misión
+    delay: 80
+
+  daily-reset:
+    enabled: true
+    title: "&#55AAFF¡Nuevas misiones! 📜"
+    subtitle: "&7Las misiones diarias se reiniciaron"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+    delay: 0
+
 admin:
   premium-given: "&aLe diste el pase premium a &f%player%&a."
   premium-removed: "&aLe quitaste el pase premium a &f%player%&a."
