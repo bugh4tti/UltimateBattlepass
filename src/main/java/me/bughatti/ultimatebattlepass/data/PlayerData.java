@@ -10,9 +10,16 @@ import java.util.UUID;
 public class PlayerData {
 
     private final UUID uuid;
+    private String name = "";
     private String seasonId = "";
     private String dailyKey = "";
     private int points = 0;
+
+    // Booster activo (se guarda con la hora exacta en que vence)
+    private String boosterName = "";
+    private double boosterMultiplier = 1.0;
+    private double boosterChance = 100.0;
+    private long boosterExpires = 0L;
 
     private final Set<Integer> claimedFree = new HashSet<>();
     private final Set<Integer> claimedPremium = new HashSet<>();
@@ -25,6 +32,14 @@ public class PlayerData {
 
     public UUID getUuid() {
         return uuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name == null ? "" : name;
     }
 
     public String getSeasonId() {
@@ -93,6 +108,52 @@ public class PlayerData {
         completed.add(key);
     }
 
+    // ------------------------------------------------------------------
+    // Booster
+    // ------------------------------------------------------------------
+
+    public String getBoosterName() {
+        return boosterName;
+    }
+
+    public double getBoosterMultiplier() {
+        return boosterMultiplier;
+    }
+
+    public double getBoosterChance() {
+        return boosterChance;
+    }
+
+    public long getBoosterExpires() {
+        return boosterExpires;
+    }
+
+    public boolean hasActiveBooster() {
+        return boosterExpires > System.currentTimeMillis();
+    }
+
+    public long getBoosterRemainingSeconds() {
+        return Math.max(0L, (boosterExpires - System.currentTimeMillis()) / 1000L);
+    }
+
+    public void setBooster(String name, double multiplier, double chance, long expires) {
+        this.boosterName = name == null ? "" : name;
+        this.boosterMultiplier = multiplier;
+        this.boosterChance = chance;
+        this.boosterExpires = expires;
+    }
+
+    public void clearBooster() {
+        this.boosterName = "";
+        this.boosterMultiplier = 1.0;
+        this.boosterChance = 100.0;
+        this.boosterExpires = 0L;
+    }
+
+    // ------------------------------------------------------------------
+    // Reinicios
+    // ------------------------------------------------------------------
+
     /**
      * Borra el progreso de todas las misiones diarias (claves "daily_...").
      */
@@ -113,7 +174,7 @@ public class PlayerData {
     }
 
     /**
-     * Reinicia todo el progreso de la temporada.
+     * Reinicia todo el progreso de la temporada. El booster activo se conserva.
      */
     public void resetSeason() {
         points = 0;
@@ -122,4 +183,4 @@ public class PlayerData {
         progress.clear();
         completed.clear();
     }
-  }
+    }
