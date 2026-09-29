@@ -3,7 +3,8 @@
 # ==========================================
 # Tipos: BLOCK_BREAK, BLOCK_PLACE, MOB_KILL, PLAYER_KILL, PLAY_TIME (minutos), COMMAND
 # target: material (STONE), mob (ZOMBIE), comando sin barra (spawn) o ANY para cualquiera.
-# Los id no pueden llevar espacios ni puntos.
+# Los id no pueden llevar espacios ni puntos. No cambies un id con la misión en curso.
+# Cada lista muestra hasta 7 misiones en el menú.
 # Opcional: commands: ["eco give %player% 1000"] (se ejecutan al completar la misión)
 
 # Misiones diarias: se reinician a la hora de daily-reset-time (06:00 Argentina)
@@ -66,14 +67,38 @@ weeks:
           - "&7Mata a &f15 &7jugadores."
         type: PLAYER_KILL
         amount: 15
-        points: 200
+        points: 250
       jugador:
         name: "Sin Descanso"
         description:
           - "&7Juega durante &f4 horas."
         type: PLAY_TIME
         amount: 240
-        points: 200
+        points: 150
+      diamantes:
+        name: "Fiebre de Diamantes"
+        description:
+          - "&7Rompe &f40 &7menas de diamante."
+        type: BLOCK_BREAK
+        target: DIAMOND_ORE
+        amount: 40
+        points: 150
+      constructor:
+        name: "Obra Maestra"
+        description:
+          - "&7Coloca &f2,000 &7bloques."
+        type: BLOCK_PLACE
+        target: ANY
+        amount: 2000
+        points: 150
+      creepers:
+        name: "Cazacreepers"
+        description:
+          - "&7Mata &f60 &7creepers."
+        type: MOB_KILL
+        target: CREEPER
+        amount: 60
+        points: 100
   2:
     missions:
       constructor:
@@ -98,14 +123,38 @@ weeks:
           - "&7Mata a &f20 &7jugadores."
         type: PLAYER_KILL
         amount: 20
-        points: 200
+        points: 250
       jugador:
         name: "Residente"
         description:
           - "&7Juega durante &f5 horas."
         type: PLAY_TIME
         amount: 300
-        points: 200
+        points: 150
+      lenador:
+        name: "Leñador"
+        description:
+          - "&7Rompe &f500 &7troncos de roble."
+        type: BLOCK_BREAK
+        target: OAK_LOG
+        amount: 500
+        points: 150
+      endermen:
+        name: "Cazaendermen"
+        description:
+          - "&7Mata &f30 &7endermen."
+        type: MOB_KILL
+        target: ENDERMAN
+        amount: 30
+        points: 150
+      viajero:
+        name: "Viajero Frecuente"
+        description:
+          - "&7Usa el comando &f/spawn &7unas &f10 &7veces."
+        type: COMMAND
+        target: spawn
+        amount: 10
+        points: 100
   3:
     missions:
       minero:
@@ -130,7 +179,7 @@ weeks:
           - "&7Mata a &f25 &7jugadores."
         type: PLAYER_KILL
         amount: 25
-        points: 200
+        points: 250
       spawn:
         name: "Viajero"
         description:
@@ -138,7 +187,31 @@ weeks:
         type: COMMAND
         target: spawn
         amount: 15
-        points: 200
+        points: 100
+      aranas:
+        name: "Cazaarañas"
+        description:
+          - "&7Mata &f100 &7arañas."
+        type: MOB_KILL
+        target: SPIDER
+        amount: 100
+        points: 150
+      hierro:
+        name: "Ferretero"
+        description:
+          - "&7Rompe &f300 &7menas de hierro."
+        type: BLOCK_BREAK
+        target: IRON_ORE
+        amount: 300
+        points: 150
+      granjero:
+        name: "Granjero"
+        description:
+          - "&7Cosecha &f500 &7trigos."
+        type: BLOCK_BREAK
+        target: WHEAT
+        amount: 500
+        points: 150
   4:
     missions:
       minero:
@@ -163,11 +236,35 @@ weeks:
           - "&7Mata a &f30 &7jugadores."
         type: PLAYER_KILL
         amount: 30
-        points: 200
+        points: 250
       jugador:
         name: "Veterano"
         description:
           - "&7Juega durante &f6 horas."
         type: PLAY_TIME
         amount: 360
+        points: 150
+      blazes:
+        name: "Domador de Llamas"
+        description:
+          - "&7Mata &f50 &7blazes."
+        type: MOB_KILL
+        target: BLAZE
+        amount: 50
+        points: 150
+      wither:
+        name: "Cazawither"
+        description:
+          - "&7Mata &f30 &7esqueletos wither."
+        type: MOB_KILL
+        target: WITHER_SKELETON
+        amount: 30
+        points: 150
+      debris:
+        name: "Buscador de Netherite"
+        description:
+          - "&7Rompe &f15 &7escombros antiguos."
+        type: BLOCK_BREAK
+        target: ANCIENT_DEBRIS
+        amount: 15
         points: 200
