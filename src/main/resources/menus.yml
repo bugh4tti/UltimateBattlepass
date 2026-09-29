@@ -13,13 +13,17 @@ texts:
   pass-type:
     free: "&aGratuito"
     premium: "&dPremium"
+  # Se usa en el menú principal (%booster%)
+  booster:
+    active: "&d%booster% &8(&f%time%&8)"
+    none: "&7Ninguno"
 
 # ------------------------------------------
 #  Menú de Pase de Batalla
 # ------------------------------------------
 main:
   title: "Menú de Pase de Batalla"
-  rows: 3
+  rows: 4
   items:
     rewards:
       slot: 10
@@ -46,6 +50,7 @@ main:
         - " &8▪ &7Tipo de Pase: %pass_type%"
         - " &8▪ &7Puntos: &b%points%&8/&b%points_needed%"
         - " &8▪ &7Nivel Actual: &d%level%&8/&d%max_level%"
+        - " &8▪ &7Booster: %booster%"
     missions:
       slot: 16
       material: WRITABLE_BOOK
@@ -54,6 +59,28 @@ main:
         - ""
         - "&7Completa las misiones disponibles"
         - "&7para obtener puntos del pase."
+        - ""
+        - "&e▲ ¡Click para abrir menú!"
+    top:
+      slot: 29
+      material: GOLDEN_HELMET
+      name: "&#FFDD55▸ Top del Pase"
+      lore:
+        - ""
+        - "&7Mira quiénes son los jugadores"
+        - "&7con más puntos del pase."
+        - ""
+        - "&e▲ ¡Click para abrir menú!"
+    boosters:
+      slot: 33
+      material: NETHER_STAR
+      name: "&#DD55FF▸ Boosters de Puntos"
+      lore:
+        - ""
+        - "&7Mira tu booster activo y el"
+        - "&7de tu mano secundaria."
+        - ""
+        - "&#FFDD55✎ Booster: %booster%"
         - ""
         - "&e▲ ¡Click para abrir menú!"
 
@@ -142,7 +169,7 @@ mission-list:
       - "%description%"
       - ""
       - "&#FFDD55✎ Progreso:"
-      - " &8▪ &7Avance: &f%progress%&8/&f%amount% &8(&f%percent%%&8)"
+      - " &8▪ &7Avance: &f%progress%&8/&f%amount% %unit% &8(&f%percent%%&8)"
       - " &8▪ &7Recompensa: &b+%points% puntos"
       - ""
       - "%bar%"
@@ -155,7 +182,7 @@ mission-list:
       - "%description%"
       - ""
       - "&#FFDD55✎ Progreso:"
-      - " &8▪ &7Avance: &f%progress%&8/&f%amount% &8(&f100%&8)"
+      - " &8▪ &7Avance: &f%progress%&8/&f%amount% %unit% &8(&f100%&8)"
       - " &8▪ &7Recompensa: &b+%points% puntos"
       - ""
       - "&a▲ ¡Misión completada!"
@@ -287,6 +314,164 @@ rewards:
 
   back:
     slot: 49
+    material: OAK_DOOR
+    name: "&c▸ Volver"
+    lore:
+      - ""
+      - "&e▲ ¡Click para volver!"
+
+# ------------------------------------------
+#  Top del Pase
+# ------------------------------------------
+# Las posiciones 1, 2, 3... siguen el orden de "slots".
+top:
+  title: "Top del Pase de Batalla"
+  rows: 5
+  # Podio: #1 arriba, #2 y #3 al costado, del #4 al #10 abajo
+  slots: [13, 21, 23, 28, 29, 30, 31, 32, 33, 34]
+
+  # Ítems por posición. "default" se usa para las que no tienen uno propio.
+  # %position%, %player%, %level%, %points%
+  entry:
+    "1":
+      material: PLAYER_HEAD
+      name: "&#FFDD55&l#1 &f%player%"
+      lore:
+        - ""
+        - "&#FFDD55✎ Información:"
+        - " &8▪ &7Nivel: &d%level%"
+        - " &8▪ &7Puntos: &b%points%"
+        - ""
+        - "&6★ ¡Líder del pase! ★"
+    "2":
+      material: PLAYER_HEAD
+      name: "&#CCCCCC&l#2 &f%player%"
+      lore:
+        - ""
+        - "&#FFDD55✎ Información:"
+        - " &8▪ &7Nivel: &d%level%"
+        - " &8▪ &7Puntos: &b%points%"
+    "3":
+      material: PLAYER_HEAD
+      name: "&#CD7F32&l#3 &f%player%"
+      lore:
+        - ""
+        - "&#FFDD55✎ Información:"
+        - " &8▪ &7Nivel: &d%level%"
+        - " &8▪ &7Puntos: &b%points%"
+    default:
+      material: PLAYER_HEAD
+      name: "&e#%position% &f%player%"
+      lore:
+        - ""
+        - "&#FFDD55✎ Información:"
+        - " &8▪ &7Nivel: &d%level%"
+        - " &8▪ &7Puntos: &b%points%"
+
+  # Posiciones que todavía nadie ocupa
+  empty:
+    material: GRAY_STAINED_GLASS_PANE
+    name: "&7#%position% &8- &7Vacío"
+    lore:
+      - ""
+      - "&7Todavía nadie ocupa"
+      - "&7esta posición."
+
+  # Tu posición (con tu cabeza)
+  self:
+    slot: 44
+    material: PLAYER_HEAD
+    name: "&#55FF55▸ Tu posición"
+    lore:
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Posición: &e#%position%"
+      - " &8▪ &7Nivel: &d%level%"
+      - " &8▪ &7Puntos: &b%points%"
+
+  back:
+    slot: 40
+    material: OAK_DOOR
+    name: "&c▸ Volver"
+    lore:
+      - ""
+      - "&e▲ ¡Click para volver!"
+
+# ------------------------------------------
+#  Boosters
+# ------------------------------------------
+boosters:
+  title: "Boosters de Puntos"
+  rows: 3
+
+  # Booster activado con click derecho (con cuenta regresiva)
+  active:
+    slot: 11
+    material: EXPERIENCE_BOTTLE
+    name: "&#DD55FF▸ Booster Activo"
+    lore:
+      - ""
+      - "&7Tu booster está multiplicando"
+      - "&7los puntos de tus misiones."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Booster: &f%booster%"
+      - " &8▪ &7Multiplicador: &dx%multiplier%"
+      - " &8▪ &7Probabilidad: &a%chance%%"
+      - " &8▪ &7Tiempo restante: &e%time%"
+  inactive:
+    slot: 11
+    material: GLASS_BOTTLE
+    name: "&7▸ Sin booster activo"
+    lore:
+      - ""
+      - "&7No tenés ningún booster activo."
+      - "&7Usá un booster con &eclick derecho&7"
+      - "&7para activarlo."
+
+  # Booster de la mano secundaria
+  offhand-active:
+    slot: 15
+    material: TOTEM_OF_UNDYING
+    name: "&#FFDD55▸ Booster en Mano Secundaria"
+    lore:
+      - ""
+      - "&7Tu ítem está dando puntos"
+      - "&7extra a veces."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Booster: &f%booster%"
+      - " &8▪ &7Multiplicador: &6x%multiplier%"
+      - " &8▪ &7Probabilidad: &a%chance%%"
+  offhand-empty:
+    slot: 15
+    material: BARRIER
+    name: "&7▸ Sin booster en la mano secundaria"
+    lore:
+      - ""
+      - "&7Poné un booster de tipo"
+      - "&7talismán en tu &fmano secundaria&7"
+      - "&7para que funcione."
+
+  info:
+    slot: 13
+    material: BOOK
+    name: "&#55AAFF▸ ¿Cómo funcionan?"
+    lore:
+      - ""
+      - "&7Los boosters multiplican los puntos"
+      - "&7que ganás al completar misiones."
+      - ""
+      - "&8▪ &7Cada vez que ganás puntos, el"
+      - "&7  multiplicador tiene una &aprobabilidad"
+      - "&7  de aplicarse."
+      - "&8▪ &7Los de &eclick derecho &7duran un"
+      - "&7  tiempo y se consumen."
+      - "&8▪ &7Los de &fmano secundaria &7no se"
+      - "&7  consumen."
+
+  back:
+    slot: 22
     material: OAK_DOOR
     name: "&c▸ Volver"
     lore:
