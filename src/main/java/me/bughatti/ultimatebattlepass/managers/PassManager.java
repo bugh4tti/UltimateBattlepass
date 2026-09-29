@@ -113,8 +113,15 @@ public class PassManager {
         return maxLevel * pointsPerLevel;
     }
 
+    /**
+     * Nivel que corresponde a una cantidad de puntos.
+     */
+    public int getLevel(int points) {
+        return Math.min(maxLevel, Math.max(0, points) / pointsPerLevel);
+    }
+
     public int getLevel(PlayerData data) {
-        return Math.min(maxLevel, data.getPoints() / pointsPerLevel);
+        return getLevel(data.getPoints());
     }
 
     /**
@@ -127,6 +134,9 @@ public class PassManager {
         return data.getPoints() % pointsPerLevel;
     }
 
+    /**
+     * Suma puntos sin aplicar boosters (lo usan los comandos de admin).
+     */
     public void addPoints(Player player, int amount) {
         if (amount <= 0) {
             return;
@@ -147,6 +157,13 @@ public class PassManager {
             // Un solo título con el nivel final, aunque haya subido varios a la vez
             plugin.sendTitle(player, "level-up", "%level%", String.valueOf(after));
         }
+    }
+
+    /**
+     * Suma los puntos de una misión completada, aplicando los boosters.
+     */
+    public void addMissionPoints(Player player, int amount) {
+        addPoints(player, plugin.getBoosterManager().apply(player, amount));
     }
 
     public void setPoints(Player player, int points) {
@@ -243,4 +260,4 @@ public class PassManager {
     private String stripSlash(String command) {
         return command.startsWith("/") ? command.substring(1) : command;
     }
-    }
+                }
