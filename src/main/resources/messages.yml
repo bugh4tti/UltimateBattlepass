@@ -24,6 +24,40 @@ pass-type:
   free: "&aGratis"
   premium: "&dPremium"
 
+# Textos que devuelven los placeholders %bp_...%
+placeholders:
+  "yes": "Sí"
+  "no": "No"
+  empty: "-"
+  no-booster: "Ninguno"
+
+# ------------------------------------------
+#  Boosters
+# ------------------------------------------
+booster:
+  activated: "&aActivaste &f%booster% &7(&dx%multiplier%&7, &a%chance%% &7de probabilidad) por &e%time%&7."
+  already-active: "&cYa tenés un booster activo. Esperá a que termine."
+  expired: "&7Tu booster de puntos terminó."
+  proc: "&d¡Booster! &7Tus puntos se multiplicaron por &dx%multiplier% &8(&f%base% &7→ &b%points%&8)"
+  offhand-hint: "&7Este ítem funciona mientras lo tengas en tu &fmano secundaria&7."
+  given: "&aLe diste &f%amount%x %booster% &aa &f%player%&a."
+  received: "&aRecibiste &f%amount%x %booster%&a."
+  cleared: "&aLe quitaste el booster activo a &f%player%&a."
+  unknown: "&cEl booster &f%id% &cno existe. Usá &f/bp booster list&c."
+  list-header: "&#FFAA00&lBoosters disponibles &7(%count%)"
+  list-line: " &8▪ &e%id% &7- &f%type% &8(&dx%multiplier%&8, &a%chance%%&8)"
+
+# ------------------------------------------
+#  Top (chat)
+# ------------------------------------------
+top:
+  header: "&8&m-----------&r &#FFAA00&lTop Battlepass &8&m-----------"
+  line: " &e#%position% &f%player% &8- &7Nivel &d%level% &8(&b%points% pts&8)"
+  empty: " &7Todavía no hay nadie en el ranking."
+  footer: " &7Tu posición: &e#%position%"
+  footer-none: " &7Todavía no estás en el ranking."
+  footer-line: "&8&m-----------------------------------------"
+
 # ------------------------------------------
 #  Títulos y subtítulos
 # ------------------------------------------
@@ -69,6 +103,16 @@ titles:
     fade-out: 20
     delay: 0
 
+  # Placeholders: %booster%, %multiplier%, %chance%, %time%
+  booster-activated:
+    enabled: true
+    title: "&#DD55FF¡Booster x%multiplier% activado! ⚡"
+    subtitle: "&7Puntos multiplicados durante &e%time% &8(&a%chance%%&8)"
+    fade-in: 10
+    stay: 70
+    fade-out: 20
+    delay: 0
+
 admin:
   premium-given: "&aLe diste el pase premium a &f%player%&a."
   premium-removed: "&aLe quitaste el pase premium a &f%player%&a."
@@ -80,10 +124,13 @@ help:
   - "&8&m-----------------------------------"
   - "&#FFAA00&lUltimateBattlepass &7- Ayuda"
   - "&e/bp &7- Abre el menú del pase"
+  - "&e/bp top &7- Abre el top del pase (&e/bp top chat &7para verlo en el chat)"
+  - "&e/bp booster &7- Mira tu booster activo"
   - "&e/bp help &7- Muestra esta ayuda"
-  - "&e/bp reload &7- Recarga las configuraciones"
-  - "&e/bp addpoints <jugador> <puntos> &7- Da puntos"
-  - "&e/bp setpoints <jugador> <puntos> &7- Fija los puntos"
-  - "&e/bp premium <give|remove> <jugador> &7- Pase premium"
-  - "&e/bp season start &7- Inicia una nueva temporada hoy"
+  - "&c/bp reload &7- Recarga las configuraciones"
+  - "&c/bp addpoints <jugador> <puntos> &7- Da puntos"
+  - "&c/bp setpoints <jugador> <puntos> &7- Fija los puntos"
+  - "&c/bp premium <give|remove> <jugador> &7- Pase premium"
+  - "&c/bp booster <list|give|clear> ... &7- Administra boosters"
+  - "&c/bp season start &7- Inicia una nueva temporada hoy"
   - "&8&m-----------------------------------"
