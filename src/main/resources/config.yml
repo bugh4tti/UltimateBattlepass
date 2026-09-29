@@ -1,0 +1,28 @@
+# ==========================================
+#  UltimateBattlepass - config.yml
+# ==========================================
+
+# Zona horaria usada para los reinicios y las semanas
+timezone: "America/Argentina/Cordoba"
+
+# Hora a la que se reinician las misiones diarias (formato HH:mm)
+daily-reset-time: "06:00"
+
+season:
+  name: "Temporada 1"
+  # Fecha de inicio de la Semana #1 (formato yyyy-MM-dd).
+  # Empieza a la hora indicada en daily-reset-time.
+  start-date: "2026-09-28"
+  # Cantidad de semanas de la temporada (1 a 4)
+  weeks: 4
+
+pass:
+  # Puntos necesarios para subir cada nivel
+  points-per-level: 120
+  # Nivel máximo del pase
+  max-level: 50
+  # Permiso que da el pase premium
+  premium-permission: "ultimatebattlepass.premium"
+
+# Cada cuántos segundos se guardan los datos de los jugadores
+save-interval-seconds: 300
