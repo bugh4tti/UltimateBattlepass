@@ -1,0 +1,92 @@
+# ==========================================
+#  UltimateBattlepass - boosters.yml
+# ==========================================
+# type:
+#   ACTIVATE -> click derecho: se consume y activa el multiplicador por "duration" segundos.
+#   OFFHAND  -> funciona mientras el ítem esté en la mano secundaria. No se consume.
+# multiplier: cuánto multiplica los puntos de misión (2.0 = x2)
+# chance:     probabilidad (0 a 100) de que el multiplicador se aplique cada vez que ganás puntos
+# duration:   segundos (solo para ACTIVATE)
+# glow:       true para que el ítem brille
+# En name y lore podés usar %multiplier%, %chance% y %duration%.
+# Se entregan con: /bp booster give <jugador> <id> [cantidad]
+
+boosters:
+  x2_30m:
+    type: ACTIVATE
+    multiplier: 2.0
+    chance: 75
+    duration: 1800
+    glow: true
+    material: EXPERIENCE_BOTTLE
+    name: "&#DD55FF✦ Booster de Puntos x%multiplier%"
+    lore:
+      - ""
+      - "&7Multiplica los puntos de tus"
+      - "&7misiones por &f%duration%&7."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Multiplicador: &dx%multiplier%"
+      - " &8▪ &7Probabilidad: &a%chance%%"
+      - " &8▪ &7Duración: &f%duration%"
+      - ""
+      - "&e▲ ¡Click derecho para activar!"
+
+  x2_1h:
+    type: ACTIVATE
+    multiplier: 2.0
+    chance: 90
+    duration: 3600
+    glow: true
+    material: EXPERIENCE_BOTTLE
+    name: "&#DD55FF✦ Booster de Puntos x%multiplier% &8(1h)"
+    lore:
+      - ""
+      - "&7Multiplica los puntos de tus"
+      - "&7misiones por &f%duration%&7."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Multiplicador: &dx%multiplier%"
+      - " &8▪ &7Probabilidad: &a%chance%%"
+      - " &8▪ &7Duración: &f%duration%"
+      - ""
+      - "&e▲ ¡Click derecho para activar!"
+
+  x3_15m:
+    type: ACTIVATE
+    multiplier: 3.0
+    chance: 50
+    duration: 900
+    glow: true
+    material: NETHER_STAR
+    name: "&#FFAA00✦ Booster de Puntos x%multiplier%"
+    lore:
+      - ""
+      - "&7Multiplica los puntos de tus"
+      - "&7misiones por &f%duration%&7."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Multiplicador: &6x%multiplier%"
+      - " &8▪ &7Probabilidad: &a%chance%%"
+      - " &8▪ &7Duración: &f%duration%"
+      - ""
+      - "&e▲ ¡Click derecho para activar!"
+
+  talisman:
+    type: OFFHAND
+    multiplier: 2.0
+    chance: 25
+    glow: true
+    material: TOTEM_OF_UNDYING
+    name: "&#FFDD55✦ Talismán de Puntos"
+    lore:
+      - ""
+      - "&7Mientras lo tengas en tu"
+      - "&7&omano secundaria&7, tus misiones"
+      - "&7pueden dar puntos extra."
+      - ""
+      - "&#FFDD55✎ Información:"
+      - " &8▪ &7Multiplicador: &6x%multiplier%"
+      - " &8▪ &7Probabilidad: &a%chance%%"
+      - ""
+      - "&a▲ No se consume."
