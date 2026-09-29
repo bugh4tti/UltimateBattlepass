@@ -3,7 +3,6 @@ package me.bughatti.ultimatebattlepass.managers;
 import me.bughatti.ultimatebattlepass.UltimateBattlepass;
 import me.bughatti.ultimatebattlepass.data.PlayerData;
 import me.bughatti.ultimatebattlepass.managers.MissionManager.Mission;
-import me.bughatti.ultimatebattlepass.utils.Colors;
 import me.bughatti.ultimatebattlepass.utils.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -16,10 +15,15 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.Bukkit;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MenuManager implements Listener {
 
@@ -27,7 +31,9 @@ public class MenuManager implements Listener {
         MAIN,
         MISSIONS,
         MISSION_LIST,
-        REWARDS
+        REWARDS,
+        TOP,
+        BOOSTERS
     }
 
     public static class MenuHolder implements InventoryHolder {
@@ -86,7 +92,7 @@ public class MenuManager implements Listener {
     public MenuManager(UltimateBattlepass plugin) {
         this.plugin = plugin;
 
-        // Actualiza cada segundo la cuenta regresiva del Selector de Misiones
+        // Actualiza cada segundo los menús que tienen cuenta regresiva
         Bukkit.getScheduler().runTaskTimer(plugin, this::tickOpenMenus, 20L, 20L);
     }
 
@@ -109,7 +115,7 @@ public class MenuManager implements Listener {
         ConfigurationSection menu = menu("main");
         open(player, MenuType.MAIN,
                 menu.getString("title", "Menú de Pase de Batalla"),
-                menu.getInt("rows", 3), 0, 0);
+                menu.getInt("rows", 4), 0, 0);
     }
 
     public void openMissions(Player player) {
@@ -134,10 +140,24 @@ public class MenuManager implements Listener {
                 menu.getInt("rows", 6), 0, page);
     }
 
+    public void openTop(Player player) {
+        ConfigurationSection menu = menu("top");
+        open(player, MenuType.TOP,
+                menu.getString("title", "Top del Pase de Batalla"),
+                menu.getInt("rows", 5), 0, 0);
+    }
+
+    public void openBoosters(Player player) {
+        ConfigurationSection menu = menu("boosters");
+        open(player, MenuType.BOOSTERS,
+                menu.getString("title", "Boosters de Puntos"),
+                menu.getInt("rows", 3), 0, 0);
+    }
+
     private void open(Player player, MenuType type, String title, int rows, int week, int page) {
         MenuHolder holder = new MenuHolder(player, type, week, page);
         int size = Math.max(1, Math.min(6, rows)) * 9;
-        Inventory inventory = Bukkit.createInventory(holder, size, Colors.colorize(title));
+        Inventory inventory = Bukkit.createInventory(holder, size, me.bughatti.ultimatebattlepass.utils.Colors.colorize(title));
         holder.setInventory(inventory);
         render(holder);
         player.openInventory(inventory);
@@ -155,6 +175,8 @@ public class MenuManager implements Listener {
             case MISSIONS -> renderMissions(holder);
             case MISSION_LIST -> renderMissionList(holder);
             case REWARDS -> renderRewards(holder);
+            case TOP -> renderTop(holder);
+            case BOOSTERS -> renderBoosters(holder);
         }
     }
 
@@ -177,6 +199,12 @@ public class MenuManager implements Listener {
         String weekKey = currentWeek >= 1 ? "ACTIVE" : (currentWeek == 0 ? "UPCOMING" : "ENDED");
         String passKey = pass.hasPremium(player) ? "premium" : "free";
 
+        String boosterText = data.hasActiveBooster()
+                ? text("booster.active")
+                .replace("%booster%", data.getBoosterName())
+                .replace("%time%", SeasonManager.formatDuration(data.getBoosterRemainingSeconds()))
+                : text("booster.none");
+
         ConfigurationSection rewards = items.getConfigurationSection("rewards");
         if (rewards != null) {
             place(holder, rewards.getInt("slot"), ItemBuilder.fromSection(rewards),
@@ -194,7 +222,8 @@ public class MenuManager implements Listener {
                     .replace("%points_needed%", String.valueOf(pass.getPointsPerLevel()))
                     .replace("%total_points%", String.valueOf(data.getPoints()))
                     .replace("%level%", String.valueOf(pass.getLevel(data)))
-                    .replace("%max_level%", String.valueOf(pass.getMaxLevel()));
+                    .replace("%max_level%", String.valueOf(pass.getMaxLevel()))
+                    .replace("%booster%", boosterText);
             place(holder, progress.getInt("slot"), builder, null);
         }
 
@@ -202,6 +231,19 @@ public class MenuManager implements Listener {
         if (missions != null) {
             place(holder, missions.getInt("slot"), ItemBuilder.fromSection(missions),
                     () -> openMissions(player));
+        }
+
+        ConfigurationSection top = items.getConfigurationSection("top");
+        if (top != null) {
+            place(holder, top.getInt("slot"), ItemBuilder.fromSection(top),
+                    () -> openTop(player));
+        }
+
+        ConfigurationSection boosters = items.getConfigurationSection("boosters");
+        if (boosters != null) {
+            ItemBuilder builder = ItemBuilder.fromSection(boosters)
+                    .replace("%booster%", boosterText);
+            place(holder, boosters.getInt("slot"), builder, () -> openBoosters(player));
         }
     }
 
@@ -305,6 +347,7 @@ public class MenuManager implements Listener {
                     .replace("%mission_name%", mission.getName())
                     .replace("%progress%", String.valueOf(current))
                     .replace("%amount%", String.valueOf(mission.getAmount()))
+                    .replace("%unit%", mission.getUnit())
                     .replace("%points%", String.valueOf(mission.getPoints()))
                     .replace("%percent%", String.valueOf(percent))
                     .replace("%bar%", bar(current, mission.getAmount(), 10));
@@ -443,6 +486,123 @@ public class MenuManager implements Listener {
     }
 
     // ------------------------------------------------------------------
+    // Top del Pase
+    // ------------------------------------------------------------------
+
+    private void renderTop(MenuHolder holder) {
+        Player player = holder.getPlayer();
+        ConfigurationSection menu = menu("top");
+        TopManager top = plugin.getTopManager();
+
+        // Posiciones 1, 2, 3... según la lista de slots
+        List<Integer> slots = menu.getIntegerList("slots");
+
+        for (int i = 0; i < slots.size(); i++) {
+            int position = i + 1;
+            TopManager.Entry entry = top.getEntry(position);
+
+            if (entry == null) {
+                ConfigurationSection empty = menu.getConfigurationSection("empty");
+                if (empty != null) {
+                    place(holder, slots.get(i),
+                            ItemBuilder.fromSection(empty).replace("%position%", String.valueOf(position)), null);
+                }
+                continue;
+            }
+
+            ConfigurationSection section = menu.getConfigurationSection("entry." + position);
+            if (section == null) {
+                section = menu.getConfigurationSection("entry.default");
+            }
+            if (section == null) {
+                continue;
+            }
+
+            ItemStack item = ItemBuilder.fromSection(section)
+                    .replace("%position%", String.valueOf(position))
+                    .replace("%player%", entry.getName())
+                    .replace("%level%", String.valueOf(entry.getLevel()))
+                    .replace("%points%", String.valueOf(entry.getPoints()))
+                    .build();
+
+            placeItem(holder, slots.get(i), withOwner(item, entry.getUuid()), null);
+        }
+
+        // Tu posición
+        ConfigurationSection self = menu.getConfigurationSection("self");
+        if (self != null) {
+            PlayerData data = data(player);
+            PassManager pass = plugin.getPassManager();
+            int position = top.getPosition(player.getUniqueId());
+
+            ItemStack item = ItemBuilder.fromSection(self)
+                    .replace("%position%", position > 0 ? String.valueOf(position) : "-")
+                    .replace("%player%", player.getName())
+                    .replace("%level%", String.valueOf(pass.getLevel(data)))
+                    .replace("%points%", String.valueOf(data.getPoints()))
+                    .build();
+
+            placeItem(holder, self.getInt("slot"), withOwner(item, player.getUniqueId()), null);
+        }
+
+        placeBack(holder, menu, () -> openMain(player));
+    }
+
+    // ------------------------------------------------------------------
+    // Boosters
+    // ------------------------------------------------------------------
+
+    private void renderBoosters(MenuHolder holder) {
+        Player player = holder.getPlayer();
+        PlayerData data = data(player);
+        BoosterManager boosters = plugin.getBoosterManager();
+        ConfigurationSection menu = menu("boosters");
+
+        // Booster activado con click derecho
+        if (data.hasActiveBooster()) {
+            ConfigurationSection active = menu.getConfigurationSection("active");
+            if (active != null) {
+                ItemBuilder builder = ItemBuilder.fromSection(active)
+                        .replace("%booster%", data.getBoosterName())
+                        .replace("%multiplier%", BoosterManager.formatNumber(data.getBoosterMultiplier()))
+                        .replace("%chance%", BoosterManager.formatNumber(data.getBoosterChance()))
+                        .replace("%time%", SeasonManager.formatDuration(data.getBoosterRemainingSeconds()));
+                place(holder, active.getInt("slot"), builder, null);
+            }
+        } else {
+            ConfigurationSection inactive = menu.getConfigurationSection("inactive");
+            if (inactive != null) {
+                place(holder, inactive.getInt("slot"), ItemBuilder.fromSection(inactive), null);
+            }
+        }
+
+        // Booster de la mano secundaria
+        BoosterManager.Booster offhand = boosters.fromItem(player.getInventory().getItemInOffHand());
+        if (offhand != null && offhand.getType() == BoosterManager.BoosterType.OFFHAND) {
+            ConfigurationSection section = menu.getConfigurationSection("offhand-active");
+            if (section != null) {
+                ItemBuilder builder = ItemBuilder.fromSection(section)
+                        .replace("%booster%", offhand.getName())
+                        .replace("%multiplier%", BoosterManager.formatNumber(offhand.getMultiplier()))
+                        .replace("%chance%", BoosterManager.formatNumber(offhand.getChance()));
+                place(holder, section.getInt("slot"), builder, null);
+            }
+        } else {
+            ConfigurationSection section = menu.getConfigurationSection("offhand-empty");
+            if (section != null) {
+                place(holder, section.getInt("slot"), ItemBuilder.fromSection(section), null);
+            }
+        }
+
+        ConfigurationSection info = menu.getConfigurationSection("info");
+        if (info != null) {
+            place(holder, info.getInt("slot"), ItemBuilder.fromSection(info), null);
+        }
+
+        placeBack(holder, menu, () -> openMain(player));
+    }
+
+    // ------------------------------------------------------------------
     // Eventos
     // ------------------------------------------------------------------
 
@@ -482,7 +642,8 @@ public class MenuManager implements Listener {
     private void tickOpenMenus() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             Inventory top = player.getOpenInventory().getTopInventory();
-            if (top.getHolder() instanceof MenuHolder holder && holder.getType() == MenuType.MISSIONS) {
+            if (top.getHolder() instanceof MenuHolder holder
+                    && (holder.getType() == MenuType.MISSIONS || holder.getType() == MenuType.BOOSTERS)) {
                 refresh(holder);
             }
         }
@@ -493,12 +654,16 @@ public class MenuManager implements Listener {
     // ------------------------------------------------------------------
 
     private void place(MenuHolder holder, int slot, ItemBuilder builder, Runnable action) {
+        placeItem(holder, slot, builder.build(), action);
+    }
+
+    private void placeItem(MenuHolder holder, int slot, ItemStack item, Runnable action) {
         Inventory inventory = holder.getInventory();
         if (slot < 0 || slot >= inventory.getSize()) {
             return;
         }
 
-        inventory.setItem(slot, builder.build());
+        inventory.setItem(slot, item);
         if (action != null) {
             holder.getActions().put(slot, action);
         }
@@ -509,6 +674,18 @@ public class MenuManager implements Listener {
         if (back != null) {
             place(holder, back.getInt("slot"), ItemBuilder.fromSection(back), action);
         }
+    }
+
+    /**
+     * Pone la cabeza de un jugador en un ítem PLAYER_HEAD.
+     */
+    private ItemStack withOwner(ItemStack item, UUID uuid) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta instanceof SkullMeta skull) {
+            skull.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
+            item.setItemMeta(skull);
+        }
+        return item;
     }
 
     private ConfigurationSection menu(String path) {
@@ -531,4 +708,4 @@ public class MenuManager implements Listener {
         filled = Math.max(0, Math.min(length, filled));
         return "&a" + "■".repeat(filled) + "&7" + "■".repeat(length - filled);
     }
-      }
+                          }
