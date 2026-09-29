@@ -1,0 +1,39 @@
+# Soporta colores con & y hex con &#RRGGBB
+prefix: "&#FFAA00&lBattlepass &8» &7"
+
+no-permission: "&cNo tenés permiso para hacer eso."
+player-only: "&cEste comando solo lo puede usar un jugador."
+player-not-found: "&cEl jugador &f%player% &cno está conectado."
+invalid-number: "&cEl número ingresado no es válido."
+unknown-command: "&cComando desconocido. Usá &f/bp help&c."
+reloaded: "&aConfiguración recargada correctamente."
+
+level-up: "&aSubiste al nivel &e%level% &adel pase de batalla."
+points-gained: "&7Ganaste &b+%points% puntos &7del pase."
+mission-completed: "&aCompletaste la misión &f%mission% &7(+%points% puntos)"
+daily-reset: "&eLas misiones diarias se reiniciaron."
+
+reward-claimed: "&aReclamaste la recompensa del nivel &e%level%&a."
+reward-already-claimed: "&cYa reclamaste esa recompensa."
+reward-locked-level: "&cTodavía no alcanzaste el nivel &f%level%&c."
+need-premium: "&cDebés tener el pase premium para reclamar esto."
+week-locked: "&cEsa semana todavía no está disponible."
+
+admin:
+  premium-given: "&aLe diste el pase premium a &f%player%&a."
+  premium-removed: "&aLe quitaste el pase premium a &f%player%&a."
+  points-added: "&aLe diste &b%points% puntos &aa &f%player%&a."
+  points-set: "&aLos puntos de &f%player% &aahora son &b%points%&a."
+  season-started: "&aSe inició una nueva temporada desde hoy."
+
+help:
+  - "&8&m-----------------------------------"
+  - "&#FFAA00&lUltimateBattlepass &7- Ayuda"
+  - "&e/bp &7- Abre el menú del pase"
+  - "&e/bp help &7- Muestra esta ayuda"
+  - "&e/bp reload &7- Recarga las configuraciones"
+  - "&e/bp addpoints <jugador> <puntos> &7- Da puntos"
+  - "&e/bp setpoints <jugador> <puntos> &7- Fija los puntos"
+  - "&e/bp premium <give|remove> <jugador> &7- Pase premium"
+  - "&e/bp season start &7- Inicia una nueva temporada hoy"
+  - "&8&m-----------------------------------"
