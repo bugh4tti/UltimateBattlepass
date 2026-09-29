@@ -19,14 +19,54 @@ season:
 pass:
   # Puntos necesarios para subir cada nivel
   points-per-level: 120
-  # Nivel máximo del pase
-  max-level: 50
+  # Nivel máximo del pase (rewards.yml trae 28 niveles)
+  max-level: 28
   # Permiso que da el pase premium
   premium-permission: "ultimatebattlepass.premium"
   # Comandos de consola que usan /bp premium give y /bp premium remove.
   # Placeholders: %player% y %permission%
   premium-give-command: "lp user %player% permission set %permission% true"
   premium-remove-command: "lp user %player% permission unset %permission%"
+
+# Ranking (/bp top y placeholders %bp_top_N_...%)
+top:
+  # Cuántos jugadores entran en el ranking (1 a 45)
+  size: 10
+  # Cada cuántos segundos se actualiza
+  refresh-seconds: 60
+
+# Evita que las misiones se puedan farmear
+anti-farm:
+  enabled: true
+  # Los bloques puestos por jugadores no cuentan al romperlos
+  ignore-player-placed-blocks: true
+  # Estos cultivos solo cuentan si están completamente crecidos
+  crop-types: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART, COCOA]
+  # Si se coloca un bloque en el mismo lugar antes de este tiempo, no cuenta
+  same-location-place-cooldown-seconds: 30
+  # Cantidad máxima de bloques que se recuerdan (se pierden al reiniciar)
+  max-tracked-blocks: 200000
+  # Los mobs que nacen de estas formas no cuentan en las misiones de MOB_KILL
+  ignore-spawner-mobs: true
+  ignored-spawn-reasons: [SPAWNER, SPAWNER_EGG, DISPENSE_EGG, EGG, BREEDING]
+
+# Bossbar y mini mensaje (arriba de la hotbar) con el progreso de la misión
+progress-display:
+  # Tipos de misión que NO muestran progreso (PLAY_TIME sumaría cada minuto)
+  ignored-types: [PLAY_TIME]
+  bossbar:
+    enabled: true
+    # Placeholders: %mission%, %progress%, %amount%, %unit%, %percent%
+    format: "&e&lMisión &8» &f%mission% &8- &f%progress%&7/&f%amount% %unit% &7(%percent%%)"
+    # BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW
+    color: YELLOW
+    # SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
+    style: SEGMENTED_10
+    # Segundos que queda en pantalla sin progreso. 0 = hasta completar la misión
+    hide-after-seconds: 0
+  actionbar:
+    enabled: true
+    format: "&6Misión de %mission% &f%progress%/%amount% %unit% &7(%percent%%)"
 
 # Cada cuántos segundos se guardan los datos de los jugadores
 save-interval-seconds: 300
