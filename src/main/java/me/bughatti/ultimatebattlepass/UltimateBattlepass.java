@@ -2,12 +2,18 @@ package me.bughatti.ultimatebattlepass;
 
 import me.bughatti.ultimatebattlepass.commands.BattlepassCommand;
 import me.bughatti.ultimatebattlepass.data.DataManager;
+import me.bughatti.ultimatebattlepass.hooks.BattlepassExpansion;
+import me.bughatti.ultimatebattlepass.listeners.BoosterListener;
 import me.bughatti.ultimatebattlepass.listeners.ConnectionListener;
 import me.bughatti.ultimatebattlepass.listeners.MissionListener;
+import me.bughatti.ultimatebattlepass.managers.AntiFarmManager;
+import me.bughatti.ultimatebattlepass.managers.BoosterManager;
 import me.bughatti.ultimatebattlepass.managers.MenuManager;
 import me.bughatti.ultimatebattlepass.managers.MissionManager;
 import me.bughatti.ultimatebattlepass.managers.PassManager;
+import me.bughatti.ultimatebattlepass.managers.ProgressDisplayManager;
 import me.bughatti.ultimatebattlepass.managers.SeasonManager;
+import me.bughatti.ultimatebattlepass.managers.TopManager;
 import me.bughatti.ultimatebattlepass.utils.Colors;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -30,13 +36,19 @@ public class UltimateBattlepass extends JavaPlugin {
     private FileConfiguration menusConfig;
     private FileConfiguration missionsConfig;
     private FileConfiguration rewardsConfig;
+    private FileConfiguration boostersConfig;
 
     private SeasonManager seasonManager;
     private DataManager dataManager;
     private PassManager passManager;
+    private BoosterManager boosterManager;
+    private AntiFarmManager antiFarmManager;
     private MissionManager missionManager;
+    private ProgressDisplayManager progressDisplayManager;
+    private TopManager topManager;
     private MenuManager menuManager;
 
+    private BattlepassExpansion expansion;
     private BukkitTask autosaveTask;
 
     @Override
@@ -49,11 +61,16 @@ public class UltimateBattlepass extends JavaPlugin {
         seasonManager = new SeasonManager(this);
         dataManager = new DataManager(this);
         passManager = new PassManager(this);
+        boosterManager = new BoosterManager(this);
+        antiFarmManager = new AntiFarmManager(this);
         missionManager = new MissionManager(this);
+        progressDisplayManager = new ProgressDisplayManager(this);
+        topManager = new TopManager(this);
         menuManager = new MenuManager(this);
 
         getServer().getPluginManager().registerEvents(new ConnectionListener(this), this);
         getServer().getPluginManager().registerEvents(new MissionListener(this), this);
+        getServer().getPluginManager().registerEvents(new BoosterListener(this), this);
         getServer().getPluginManager().registerEvents(menuManager, this);
 
         BattlepassCommand command = new BattlepassCommand(this);
@@ -69,7 +86,14 @@ public class UltimateBattlepass extends JavaPlugin {
         }
 
         missionManager.startTasks();
+        topManager.reload();
         startAutosave();
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            expansion = new BattlepassExpansion(this);
+            expansion.register();
+            getLogger().info("PlaceholderAPI detectado: placeholders %bp_...% registrados.");
+        }
 
         getLogger().info("UltimateBattlepass " + getDescription().getVersion() + " activado.");
     }
@@ -78,6 +102,15 @@ public class UltimateBattlepass extends JavaPlugin {
     public void onDisable() {
         if (autosaveTask != null) {
             autosaveTask.cancel();
+        }
+        if (expansion != null) {
+            expansion.unregister();
+        }
+        if (topManager != null) {
+            topManager.stop();
+        }
+        if (progressDisplayManager != null) {
+            progressDisplayManager.removeAll();
         }
         if (missionManager != null) {
             missionManager.stopTasks();
@@ -89,7 +122,7 @@ public class UltimateBattlepass extends JavaPlugin {
     }
 
     /**
-     * Recarga config.yml, messages.yml, menus.yml, missions.yml y rewards.yml.
+     * Recarga config.yml, messages.yml, menus.yml, missions.yml, rewards.yml y boosters.yml.
      */
     public void reloadAll() {
         reloadConfig();
@@ -98,7 +131,11 @@ public class UltimateBattlepass extends JavaPlugin {
         seasonManager.reload();
         dataManager.validateAll();
         passManager.reload();
+        boosterManager.reload();
+        antiFarmManager.reload();
         missionManager.reload();
+        progressDisplayManager.reload();
+        topManager.reload();
         menuManager.reload();
 
         startAutosave();
@@ -109,6 +146,7 @@ public class UltimateBattlepass extends JavaPlugin {
         menusConfig = loadYaml("menus.yml");
         missionsConfig = loadYaml("missions.yml");
         rewardsConfig = loadYaml("rewards.yml");
+        boostersConfig = loadYaml("boosters.yml");
     }
 
     private FileConfiguration loadYaml(String name) {
@@ -218,6 +256,10 @@ public class UltimateBattlepass extends JavaPlugin {
         return rewardsConfig;
     }
 
+    public FileConfiguration getBoostersConfig() {
+        return boostersConfig;
+    }
+
     public SeasonManager getSeasonManager() {
         return seasonManager;
     }
@@ -230,8 +272,24 @@ public class UltimateBattlepass extends JavaPlugin {
         return passManager;
     }
 
+    public BoosterManager getBoosterManager() {
+        return boosterManager;
+    }
+
+    public AntiFarmManager getAntiFarmManager() {
+        return antiFarmManager;
+    }
+
     public MissionManager getMissionManager() {
         return missionManager;
+    }
+
+    public ProgressDisplayManager getProgressDisplayManager() {
+        return progressDisplayManager;
+    }
+
+    public TopManager getTopManager() {
+        return topManager;
     }
 
     public MenuManager getMenuManager() {
