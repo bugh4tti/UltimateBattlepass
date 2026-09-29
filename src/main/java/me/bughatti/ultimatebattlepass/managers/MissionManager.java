@@ -259,9 +259,11 @@ public class MissionManager {
     private void complete(Player player, PlayerData data, Mission mission) {
         data.markCompleted(mission.getKey());
 
-        plugin.send(player, "mission-completed",
-                "%mission%", Colors.strip(mission.getName()),
-                "%points%", String.valueOf(mission.getPoints()));
+        String name = Colors.strip(mission.getName());
+        String points = String.valueOf(mission.getPoints());
+
+        plugin.send(player, "mission-completed", "%mission%", name, "%points%", points);
+        plugin.sendTitle(player, "mission-completed", "%mission%", name, "%points%", points);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
 
         for (String command : mission.getCommands()) {
@@ -313,6 +315,7 @@ public class MissionManager {
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             plugin.send(player, "daily-reset");
+            plugin.sendTitle(player, "daily-reset");
         }
     }
-              }
+        }
