@@ -23,6 +23,10 @@ pass:
   max-level: 50
   # Permiso que da el pase premium
   premium-permission: "ultimatebattlepass.premium"
+  # Comandos de consola que usan /bp premium give y /bp premium remove.
+  # Placeholders: %player% y %permission%
+  premium-give-command: "lp user %player% permission set %permission% true"
+  premium-remove-command: "lp user %player% permission unset %permission%"
 
 # Cada cuántos segundos se guardan los datos de los jugadores
 save-interval-seconds: 300
