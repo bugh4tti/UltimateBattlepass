@@ -1,0 +1,173 @@
+# ==========================================
+#  UltimateBattlepass - missions.yml
+# ==========================================
+# Tipos: BLOCK_BREAK, BLOCK_PLACE, MOB_KILL, PLAYER_KILL, PLAY_TIME (minutos), COMMAND
+# target: material (STONE), mob (ZOMBIE), comando sin barra (spawn) o ANY para cualquiera.
+# Los id no pueden llevar espacios ni puntos.
+# Opcional: commands: ["eco give %player% 1000"] (se ejecutan al completar la misión)
+
+# Misiones diarias: se reinician a la hora de daily-reset-time (06:00 Argentina)
+daily:
+  missions:
+    minero:
+      name: "Minero Diario"
+      description:
+        - "&7Rompe &f500 &7bloques."
+      type: BLOCK_BREAK
+      target: ANY
+      amount: 500
+      points: 25
+    cazador:
+      name: "Cazador Diario"
+      description:
+        - "&7Mata &f50 &7mobs."
+      type: MOB_KILL
+      target: ANY
+      amount: 50
+      points: 25
+    guerrero:
+      name: "Guerrero Diario"
+      description:
+        - "&7Mata a &f3 &7jugadores."
+      type: PLAYER_KILL
+      amount: 3
+      points: 25
+    jugador:
+      name: "Jugador Activo"
+      description:
+        - "&7Juega durante &f30 &7minutos."
+      type: PLAY_TIME
+      amount: 30
+      points: 25
+
+# Misiones semanales: solo suman mientras su semana está activa
+weeks:
+  1:
+    missions:
+      minero:
+        name: "Gran Minero"
+        description:
+          - "&7Rompe &f5,000 &7bloques."
+        type: BLOCK_BREAK
+        target: ANY
+        amount: 5000
+        points: 200
+      cazador:
+        name: "Gran Cazador"
+        description:
+          - "&7Mata &f300 &7mobs."
+        type: MOB_KILL
+        target: ANY
+        amount: 300
+        points: 200
+      guerrero:
+        name: "Gran Guerrero"
+        description:
+          - "&7Mata a &f15 &7jugadores."
+        type: PLAYER_KILL
+        amount: 15
+        points: 200
+      jugador:
+        name: "Sin Descanso"
+        description:
+          - "&7Juega durante &f4 horas."
+        type: PLAY_TIME
+        amount: 240
+        points: 200
+  2:
+    missions:
+      constructor:
+        name: "Constructor"
+        description:
+          - "&7Coloca &f3,000 &7bloques."
+        type: BLOCK_PLACE
+        target: ANY
+        amount: 3000
+        points: 200
+      zombies:
+        name: "Cazazombis"
+        description:
+          - "&7Mata &f200 &7zombis."
+        type: MOB_KILL
+        target: ZOMBIE
+        amount: 200
+        points: 200
+      guerrero:
+        name: "Duelista"
+        description:
+          - "&7Mata a &f20 &7jugadores."
+        type: PLAYER_KILL
+        amount: 20
+        points: 200
+      jugador:
+        name: "Residente"
+        description:
+          - "&7Juega durante &f5 horas."
+        type: PLAY_TIME
+        amount: 300
+        points: 200
+  3:
+    missions:
+      minero:
+        name: "Excavador"
+        description:
+          - "&7Rompe &f8,000 &7bloques."
+        type: BLOCK_BREAK
+        target: ANY
+        amount: 8000
+        points: 200
+      esqueletos:
+        name: "Cazaesqueletos"
+        description:
+          - "&7Mata &f200 &7esqueletos."
+        type: MOB_KILL
+        target: SKELETON
+        amount: 200
+        points: 200
+      guerrero:
+        name: "Leyenda del PvP"
+        description:
+          - "&7Mata a &f25 &7jugadores."
+        type: PLAYER_KILL
+        amount: 25
+        points: 200
+      spawn:
+        name: "Viajero"
+        description:
+          - "&7Usa el comando &f/spawn &7unas &f15 &7veces."
+        type: COMMAND
+        target: spawn
+        amount: 15
+        points: 200
+  4:
+    missions:
+      minero:
+        name: "Maestro Minero"
+        description:
+          - "&7Rompe &f12,000 &7bloques."
+        type: BLOCK_BREAK
+        target: ANY
+        amount: 12000
+        points: 200
+      cazador:
+        name: "Exterminador"
+        description:
+          - "&7Mata &f500 &7mobs."
+        type: MOB_KILL
+        target: ANY
+        amount: 500
+        points: 200
+      guerrero:
+        name: "Campeón de la Temporada"
+        description:
+          - "&7Mata a &f30 &7jugadores."
+        type: PLAYER_KILL
+        amount: 30
+        points: 200
+      jugador:
+        name: "Veterano"
+        description:
+          - "&7Juega durante &f6 horas."
+        type: PLAY_TIME
+        amount: 360
+        points: 200
