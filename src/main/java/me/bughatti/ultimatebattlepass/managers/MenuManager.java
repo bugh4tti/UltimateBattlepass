@@ -3,6 +3,7 @@ package me.bughatti.ultimatebattlepass.managers;
 import me.bughatti.ultimatebattlepass.UltimateBattlepass;
 import me.bughatti.ultimatebattlepass.data.PlayerData;
 import me.bughatti.ultimatebattlepass.managers.MissionManager.Mission;
+import me.bughatti.ultimatebattlepass.utils.Colors;
 import me.bughatti.ultimatebattlepass.utils.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -18,7 +19,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.Bukkit;
 
 import java.util.HashMap;
 import java.util.List;
@@ -87,6 +87,22 @@ public class MenuManager implements Listener {
         }
     }
 
+    /**
+     * Estadísticas del jugador para la cabeza del menú Top.
+     */
+    private record Stats(int dailyCompleted, int dailyTotal,
+                         int weeklyCompleted, int weeklyTotal,
+                         int weeksCompleted, int weeksTotal) {
+
+        int missionsCompleted() {
+            return dailyCompleted + weeklyCompleted;
+        }
+
+        int missionsTotal() {
+            return dailyTotal + weeklyTotal;
+        }
+    }
+
     private final UltimateBattlepass plugin;
 
     public MenuManager(UltimateBattlepass plugin) {
@@ -144,7 +160,7 @@ public class MenuManager implements Listener {
         ConfigurationSection menu = menu("top");
         open(player, MenuType.TOP,
                 menu.getString("title", "Top del Pase de Batalla"),
-                menu.getInt("rows", 5), 0, 0);
+                menu.getInt("rows", 6), 0, 0);
     }
 
     public void openBoosters(Player player) {
@@ -157,7 +173,7 @@ public class MenuManager implements Listener {
     private void open(Player player, MenuType type, String title, int rows, int week, int page) {
         MenuHolder holder = new MenuHolder(player, type, week, page);
         int size = Math.max(1, Math.min(6, rows)) * 9;
-        Inventory inventory = Bukkit.createInventory(holder, size, me.bughatti.ultimatebattlepass.utils.Colors.colorize(title));
+        Inventory inventory = Bukkit.createInventory(holder, size, Colors.colorize(title));
         holder.setInventory(inventory);
         render(holder);
         player.openInventory(inventory);
@@ -170,6 +186,9 @@ public class MenuManager implements Listener {
     }
 
     private void render(MenuHolder holder) {
+        // La decoración va primero para que los ítems reales queden encima
+        renderDecoration(holder, menu(configKey(holder.getType())));
+
         switch (holder.getType()) {
             case MAIN -> renderMain(holder);
             case MISSIONS -> renderMissions(holder);
@@ -177,6 +196,44 @@ public class MenuManager implements Listener {
             case REWARDS -> renderRewards(holder);
             case TOP -> renderTop(holder);
             case BOOSTERS -> renderBoosters(holder);
+        }
+    }
+
+    private String configKey(MenuType type) {
+        return switch (type) {
+            case MAIN -> "main";
+            case MISSIONS -> "missions";
+            case MISSION_LIST -> "mission-list";
+            case REWARDS -> "rewards";
+            case TOP -> "top";
+            case BOOSTERS -> "boosters";
+        };
+    }
+
+    /**
+     * Decoración opcional. En el yml, cada menú puede tener:
+     * decoration:
+     *   cualquier-nombre:
+     *     material: GRAY_STAINED_GLASS_PANE
+     *     name: " "
+     *     slots: [0, 1, 2]
+     */
+    private void renderDecoration(MenuHolder holder, ConfigurationSection menu) {
+        ConfigurationSection decoration = menu.getConfigurationSection("decoration");
+        if (decoration == null) {
+            return;
+        }
+
+        for (String key : decoration.getKeys(false)) {
+            ConfigurationSection section = decoration.getConfigurationSection(key);
+            if (section == null) {
+                continue;
+            }
+
+            ItemBuilder builder = ItemBuilder.fromSection(section);
+            for (int slot : section.getIntegerList("slots")) {
+                place(holder, slot, builder, null);
+            }
         }
     }
 
@@ -198,12 +255,7 @@ public class MenuManager implements Listener {
         int currentWeek = season.getCurrentWeek();
         String weekKey = currentWeek >= 1 ? "ACTIVE" : (currentWeek == 0 ? "UPCOMING" : "ENDED");
         String passKey = pass.hasPremium(player) ? "premium" : "free";
-
-        String boosterText = data.hasActiveBooster()
-                ? text("booster.active")
-                .replace("%booster%", data.getBoosterName())
-                .replace("%time%", SeasonManager.formatDuration(data.getBoosterRemainingSeconds()))
-                : text("booster.none");
+        String boosterText = boosterText(data);
 
         ConfigurationSection rewards = items.getConfigurationSection("rewards");
         if (rewards != null) {
@@ -528,24 +580,69 @@ public class MenuManager implements Listener {
             placeItem(holder, slots.get(i), withOwner(item, entry.getUuid()), null);
         }
 
-        // Tu posición
-        ConfigurationSection self = menu.getConfigurationSection("self");
-        if (self != null) {
+        // Cabeza con las estadísticas del jugador
+        ConfigurationSection stats = menu.getConfigurationSection("stats");
+        if (stats != null) {
             PlayerData data = data(player);
             PassManager pass = plugin.getPassManager();
-            int position = top.getPosition(player.getUniqueId());
+            Stats s = stats(data);
 
-            ItemStack item = ItemBuilder.fromSection(self)
-                    .replace("%position%", position > 0 ? String.valueOf(position) : "-")
+            int position = top.getPosition(player.getUniqueId());
+            String passKey = pass.hasPremium(player) ? "premium" : "free";
+
+            ItemStack item = ItemBuilder.fromSection(stats)
                     .replace("%player%", player.getName())
+                    .replace("%position%", position > 0 ? "#" + position : "-")
                     .replace("%level%", String.valueOf(pass.getLevel(data)))
-                    .replace("%points%", String.valueOf(data.getPoints()))
+                    .replace("%max_level%", String.valueOf(pass.getMaxLevel()))
+                    .replace("%total_points%", String.valueOf(data.getPoints()))
+                    .replace("%missions_completed%", String.valueOf(s.missionsCompleted()))
+                    .replace("%missions_total%", String.valueOf(s.missionsTotal()))
+                    .replace("%daily_completed%", String.valueOf(s.dailyCompleted()))
+                    .replace("%daily_total%", String.valueOf(s.dailyTotal()))
+                    .replace("%weekly_completed%", String.valueOf(s.weeklyCompleted()))
+                    .replace("%weekly_total%", String.valueOf(s.weeklyTotal()))
+                    .replace("%weeks_completed%", String.valueOf(s.weeksCompleted()))
+                    .replace("%weeks_total%", String.valueOf(s.weeksTotal()))
+                    .replace("%pass_type%", text("pass-type." + passKey))
+                    .replace("%booster%", boosterText(data))
                     .build();
 
-            placeItem(holder, self.getInt("slot"), withOwner(item, player.getUniqueId()), null);
+            placeItem(holder, stats.getInt("slot"), withOwner(item, player.getUniqueId()), null);
         }
 
         placeBack(holder, menu, () -> openMain(player));
+    }
+
+    /**
+     * Calcula las estadísticas de misiones de la temporada actual.
+     * Las diarias son las de hoy; las semanales acumulan toda la temporada.
+     */
+    private Stats stats(PlayerData data) {
+        MissionManager missions = plugin.getMissionManager();
+        SeasonManager season = plugin.getSeasonManager();
+
+        int dailyTotal = missions.getDailyMissions().size();
+        int dailyCompleted = missions.countCompleted(data, missions.getDailyMissions());
+
+        int weeklyTotal = 0;
+        int weeklyCompleted = 0;
+        int weeksCompleted = 0;
+        int weeksTotal = season.getWeeks();
+
+        for (int week = 1; week <= weeksTotal; week++) {
+            List<Mission> list = missions.getWeekMissions(week);
+            int done = missions.countCompleted(data, list);
+
+            weeklyTotal += list.size();
+            weeklyCompleted += done;
+
+            if (!list.isEmpty() && done == list.size()) {
+                weeksCompleted++;
+            }
+        }
+
+        return new Stats(dailyCompleted, dailyTotal, weeklyCompleted, weeklyTotal, weeksCompleted, weeksTotal);
     }
 
     // ------------------------------------------------------------------
@@ -688,6 +785,15 @@ public class MenuManager implements Listener {
         return item;
     }
 
+    private String boosterText(PlayerData data) {
+        if (!data.hasActiveBooster()) {
+            return text("booster.none");
+        }
+        return text("booster.active")
+                .replace("%booster%", data.getBoosterName())
+                .replace("%time%", SeasonManager.formatDuration(data.getBoosterRemainingSeconds()));
+    }
+
     private ConfigurationSection menu(String path) {
         ConfigurationSection section = plugin.getMenusConfig().getConfigurationSection(path);
         return section != null ? section : new MemoryConfiguration();
@@ -708,4 +814,4 @@ public class MenuManager implements Listener {
         filled = Math.max(0, Math.min(length, filled));
         return "&a" + "■".repeat(filled) + "&7" + "■".repeat(length - filled);
     }
-                          }
+            }
