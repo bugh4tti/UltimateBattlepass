@@ -68,6 +68,7 @@ public class BoosterManager {
             return duration;
         }
 
+        /** Nombre ya con %multiplier%, %chance% y %duration% reemplazados. */
         public String getName() {
             return name;
         }
@@ -108,7 +109,13 @@ public class BoosterManager {
             double multiplier = Math.max(1.0, booster.getDouble("multiplier", 2.0));
             double chance = Math.max(0.0, Math.min(100.0, booster.getDouble("chance", 100.0)));
             long duration = Math.max(1L, booster.getLong("duration", 1800L));
-            String name = booster.getString("name", id);
+
+            // El nombre puede llevar %multiplier%, %chance% y %duration%: se reemplazan acá
+            // para que también funcionen en mensajes, títulos, menús y placeholders.
+            String name = booster.getString("name", id)
+                    .replace("%multiplier%", formatNumber(multiplier))
+                    .replace("%chance%", formatNumber(chance))
+                    .replace("%duration%", SeasonManager.formatDuration(duration));
 
             boosters.put(id.toLowerCase(), new Booster(id.toLowerCase(), type, multiplier, chance, duration, name));
         }
@@ -127,13 +134,18 @@ public class BoosterManager {
     // ------------------------------------------------------------------
 
     public ItemStack createItem(Booster booster, int amount) {
-        ConfigurationSection section = plugin.getBoostersConfig().getConfigurationSection("boosters." + booster.getId());
-        if (section == null) {
-            // Por si el id está en otra mayúscula dentro del yml
-            for (String key : plugin.getBoostersConfig().getConfigurationSection("boosters").getKeys(false)) {
-                if (key.equalsIgnoreCase(booster.getId())) {
-                    section = plugin.getBoostersConfig().getConfigurationSection("boosters." + key);
-                    break;
+        ConfigurationSection boostersSection = plugin.getBoostersConfig().getConfigurationSection("boosters");
+
+        ConfigurationSection section = null;
+        if (boostersSection != null) {
+            section = boostersSection.getConfigurationSection(booster.getId());
+            if (section == null) {
+                // Por si el id está con otras mayúsculas dentro del yml
+                for (String key : boostersSection.getKeys(false)) {
+                    if (key.equalsIgnoreCase(booster.getId())) {
+                        section = boostersSection.getConfigurationSection(key);
+                        break;
+                    }
                 }
             }
         }
@@ -289,4 +301,4 @@ public class BoosterManager {
         }
         return String.valueOf(Math.round(value * 100.0) / 100.0);
     }
-              }
+                                     }
